@@ -1,0 +1,101 @@
+---
+title: "Transform Data"
+output: github_notebook
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment="")
+library(tidyverse)
+# install.packages("babynames")
+library(babynames)
+library(dplyr)
+```
+
+
+# dplyr
+
+```{r}
+babynames %>% 
+  summarise(total = sum(n), max = max(n),
+            min = min(n), total2 = sum(n^2))
+```
+
+
+## Your Turn 1
+
+Copmplete the code below to extract the rows where `name == "Khaleesi"`. Then use `summarise()` and `sum()` and `min()` to find:
+
+1. The total number of children named Khaleesi
+2. The first year Khaleesi appeared in the data
+
+*(Hint: Be sure to remove each `_` before running the code)*
+
+```{r}
+babynames %>%  
+  filter(name == "Khaleesi")  %>% 
+  summarise(total = sum(n), first = min(year))
+```
+
+
+```{r}
+babynames %>% 
+  group_by(sex) %>% 
+  summarise(total = sum(n))
+```
+
+## Your Turn 2
+
+Use `group_by()`, `summarise()`, and `arrange()` to display the ten most popular names. Compute popularity as the *total* number of children of a single gender given a name.
+
+*(Hint: Be sure to remove each `_` before running the code)*
+
+```{r}
+babynames %>%
+  group_by(name, sex) %>% 
+  summarise(total = sum(n)) %>% 
+  arrange(desc(total)) %>% 
+  head(10) %>% 
+  ggplot() +
+  geom_col(aes(x = fct_reorder(name, desc(total)), y = total, fill = sex)) +
+  labs( x = "10 Most Popular Names Since 1880", 
+        y = "Total Number Born") +
+  guides(fill = FALSE) + #gets rid of the legend
+  theme_bw() +
+  scale_fill_manual(values = c("blue", "lightblue")) #goes by alaphabetical order
+```
+```{r}
+babynames %>% 
+  mutate(percent = round(100*prop,2), nper = round(percent)) #have to do the percent first then nper you can add to it,
+```
+
+
+## Your Turn 3
+
+Fill in the blanks to: 
+Rank each name _within its year and sex_. 
+
+*(Hint: Be sure to remove each `_` before running the code)*
+
+```{r}
+babynames %>% 
+  group_by(year, sex) %>% 
+  mutate(rank = min_rank(desc(prop))) %>% #mutate adds an extra variable where summaries takes them away.
+  #filter(rank <= 10) #this is to see the top 10 names by each year and each sex
+  group_by(name, sex) %>%  # average name andsex by years
+  summarise(avg_rank = mean(rank)) %>% 
+  arrange(avg_rank)
+
+```
+
+
+***
+
+# Take aways
+
+* Make tables of summaries with `summarise()`  
+* Make new variables, with `mutate()`  
+* Do groupwise operations with `group_by()`
+
+* Connect operations with `%>%`  
+
